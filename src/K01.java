@@ -32,8 +32,8 @@ public class K01 {
         } else if (d <= 0) {
             System.out.println("Napaka: negativen d");
         } else {
-            System.out.printf("Obseg kroga s polmerom r=%f je %.3f%n", r, (2 * Math.PI * r));
-            System.out.printf("Ploscina kroga s polmerom r=%f je %.3f%n", r, (Math.PI * r * r));
+            System.out.printf("Obseg kroga s polmerom r=%f je %f%n", r, (2 * Math.PI * r));
+            System.out.printf("Ploscina kroga s polmerom r=%f je %f%n", r, (Math.PI * r * r));
         }
     }
 
