@@ -1,3 +1,5 @@
+package DN;
+
 public class DN02 {
     public static void main(String[] args) {
         int argLen = args[0].length();

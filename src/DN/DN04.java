@@ -1,3 +1,5 @@
+package DN;
+
 public class DN04 {
 
     public static void main(String[] args) {
