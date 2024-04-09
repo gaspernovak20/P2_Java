@@ -4,6 +4,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Scanner;
 
+import static java.lang.Math.round;
+
 public class DN05 {
 
     static int[][] preberiSliko(String name) {
@@ -121,6 +123,229 @@ public class DN05 {
         return avg;
     }
 
+    static int[][] zmanjsajSliko(int[][] picture) {
+
+        int pictureWidth = picture[0].length;
+        int pictureHeight = picture.length;
+
+        if (pictureWidth < 3 || pictureHeight < 3) {
+            return picture;
+        }
+
+        int pictureZipWidth = pictureWidth / 2;
+        int pictureZipHeight = pictureHeight / 2;
+
+        int[][] pictureZip = new int[pictureZipHeight][pictureZipWidth];
+
+        int sum, pixelZip;
+
+        for (int y = 0; y < pictureHeight / 2 * 2; y += 2) {
+            for (int x = 0; x < pictureWidth / 2 * 2; x += 2) {
+                sum = picture[y][x] + picture[y][x + 1] + picture[y + 1][x] + picture[y + 1][x + 1];
+                pixelZip = sum / 4;
+                pictureZip[y / 2][x / 2] = pixelZip;
+            }
+        }
+
+        return pictureZip;
+    }
+
+    static int[][] rotirajSliko(int[][] picture) {
+
+        int pictureWidth = picture[0].length;
+        int pictureHeight = picture.length;
+
+        int[][] rotatedPicture = new int[pictureWidth][pictureHeight];
+
+        for (int y = 0; y < pictureHeight; y++) {
+            for (int x = 0; x < pictureWidth; x++) {
+                rotatedPicture[x][pictureHeight - y - 1] = picture[y][x];
+            }
+        }
+
+        return rotatedPicture;
+    }
+
+    static int poisciMaxVrstico(int[][] picture) {
+
+        int rowIndex = 0;
+        int maxBrightnessDifference = 0;
+
+        for (int y = 0; y < picture.length; y++) {
+            int lightest = picture[y][0];
+            int darkest = picture[y][0];
+
+            for (int x = 0; x < picture[0].length; x++) {
+                int currentPixel = picture[y][x];
+
+                if (currentPixel > lightest) {
+                    lightest = currentPixel;
+                }
+
+                if (currentPixel < darkest) {
+                    darkest = currentPixel;
+                }
+            }
+
+            int brightnessDifference = lightest - darkest;
+
+            if (brightnessDifference > maxBrightnessDifference) {
+                maxBrightnessDifference = brightnessDifference;
+                rowIndex = y;
+            }
+        }
+
+        return rowIndex;
+    }
+
+
+    static int[][] zrcaliSliko(int[][] picture) {
+        int pictureWidth = picture[0].length;
+        int pictureHeight = picture.length;
+
+        int[][] mirroredPicture = new int[pictureHeight][pictureWidth];
+
+        for (int y = 0; y < pictureHeight; y++) {
+            for (int x = 0; x < pictureWidth / 2; x++) {
+                mirroredPicture[y][pictureWidth - 1 - x] = picture[y][x];
+                mirroredPicture[y][x] = picture[y][pictureWidth - 1 - x];
+            }
+        }
+
+        if (pictureWidth % 2 == 1) {
+            for (int y = 0; y < pictureHeight; y++) {
+                mirroredPicture[y][pictureWidth / 2] = picture[y][pictureWidth / 2];
+            }
+        }
+
+        return mirroredPicture;
+    }
+
+    static int[][][] preberiBarvnoSliko(String name) {
+
+        int[][][] pictureRGB = new int[0][][];
+
+        try {
+            Scanner pictureDoc = new Scanner(new File(name));
+
+            String[] pictureStats = pictureDoc.nextLine().split(" ");
+
+            int pictureWidth = Integer.parseInt(pictureStats[1]);
+            int pictureHeight = Integer.parseInt(pictureStats[3]);
+
+            pictureRGB = new int[3][pictureHeight][pictureWidth];
+
+            for (int i = 0; i < pictureWidth * pictureHeight; i++) {
+                int pixel = pictureDoc.nextInt();
+
+                int blue = pixel & 1023;
+                int green = (pixel >> 10) & 1023;
+                int red = (pixel >> 20) & 1023;
+
+                pictureRGB[0][i / pictureWidth][i % pictureWidth] = red;
+                pictureRGB[1][i / pictureWidth][i % pictureWidth] = green;
+                pictureRGB[2][i / pictureWidth][i % pictureWidth] = blue;
+
+//                System.out.printf("%d %d %d\n", red, green, blue);
+            }
+        } catch (FileNotFoundException e) {
+            System.out.print("Napaka: datoteka " + name + " ne obstaja.\n");
+            System.exit(0);
+        }
+        return pictureRGB;
+    }
+
+    static void izpisiBarvnoSliko(int[][][] picture) {
+
+        int pictureHeight = picture[0].length;
+        int pictureWidth = picture[0][0].length;
+
+        System.out.printf("Velikost slike: %d x %d\n", pictureWidth, pictureHeight);
+
+        for (int y = 0; y < pictureHeight; y++) {
+            for (int x = 0; x < pictureWidth; x++) {
+                System.out.printf("(%4d,%4d,%4d) ", picture[0][y][x], picture[1][y][x], picture[2][y][x]);
+            }
+            System.out.println();
+        }
+    }
+
+    static int[][] pretvoriVSivinsko(int[][][] picture) {
+
+        int pictureHeight = picture[0].length;
+        int pictureWidth = picture[0][0].length;
+
+        int[][] grayPicture = new int[pictureHeight][pictureWidth];
+
+        for (int y = 0; y < pictureHeight; y++) {
+            for (int x = 0; x < pictureWidth; x++) {
+                int pixelSum = picture[0][y][x] + picture[1][y][x] + picture[2][y][x];
+                int pixelAvg = pixelSum / 3;
+                int pixelValue = pixelAvg * 255 / 1023;
+                grayPicture[y][x] = pixelValue;
+            }
+        }
+
+        return grayPicture;
+    }
+
+    static void preberiVseInIzpisi(String[] pictureNames) {
+
+        String[][] picsBrightnessSorted = new String[pictureNames.length][2];
+
+        int currentlyStored = 0;
+
+        for (String picName : pictureNames) {
+            System.out.println(picName);
+            int[][] picture = preberiSliko(picName);
+            int pictureBrightness = (int) Math.round(svetlostSlike(picture));
+
+            int place = 0;
+
+//            Storing pic in correct order
+            for (int i = 0; i <= currentlyStored; i++) {
+
+//                On bottom
+                if (i == currentlyStored) {
+                    place = i;
+                    break;
+                }
+
+                String currentPicName = picsBrightnessSorted[i][0];
+                int currentPicBright = Integer.parseInt(picsBrightnessSorted[i][1]);
+
+
+//                Sorted by brightness
+                if (currentPicBright < pictureBrightness) {
+                    place = i;
+                    break;
+                } else if (currentPicBright == pictureBrightness) {
+//                    Ordered by name
+                    if (currentPicName.compareTo(picName) > 0) {
+                        place = i;
+                        break;
+                    }
+                }
+            }
+            System.out.println(place);
+            if (currentlyStored != 0) {
+                for (int i = currentlyStored; i > place; i--) {
+                    picsBrightnessSorted[i][0] = picsBrightnessSorted[i - 1][0];
+                    picsBrightnessSorted[i][1] = picsBrightnessSorted[i - 1][1];
+                }
+            }
+
+            picsBrightnessSorted[place][0] = picName;
+            picsBrightnessSorted[place][1] = Integer.toString(pictureBrightness);
+
+            currentlyStored++;
+        }
+
+        for (String[] picStats : picsBrightnessSorted) {
+            System.out.printf("%s (%d)\n", picStats[0], Integer.parseInt(picStats[1]));
+        }
+    }
+
     public static void main(String[] args) {
         if (Objects.equals(args[0], "izpisi")) {
             String pictureName = args[1];
@@ -140,5 +365,58 @@ public class DN05 {
 
             System.out.printf("Srednja vrednost sivine na sliki%s je: %.2f", args[1], svetlostSlike(picture));
         }
+
+        if (Objects.equals(args[0], "zmanjsaj")) {
+            String pictureName = args[1];
+            int[][] picture = preberiSliko(pictureName);
+            int[][] pictureZip = zmanjsajSliko(picture);
+            izpisiSliko(pictureZip);
+        }
+
+        if (Objects.equals(args[0], "rotiraj")) {
+            String pictureName = args[1];
+            int[][] picture = preberiSliko(pictureName);
+            int[][] rotatedPicture = rotirajSliko(picture);
+            izpisiSliko(rotatedPicture);
+        }
+
+        if (Objects.equals(args[0], "zrcali")) {
+            String pictureName = args[1];
+            int[][] picture = preberiSliko(pictureName);
+            int[][] mirroredPicture = zrcaliSliko(picture);
+            izpisiSliko(mirroredPicture);
+        }
+
+        if (Objects.equals(args[0], "vrstica")) {
+            String pictureName = args[1];
+            int[][] picture = preberiSliko(pictureName);
+            int rowIndex = poisciMaxVrstico(picture);
+            System.out.printf("Max razlika svetlo - temno je v %d. vrstici.", rowIndex + 1);
+        }
+
+        if (Objects.equals(args[0], "barvna")) {
+            String pictureName = args[1];
+            int[][][] picture = preberiBarvnoSliko(pictureName);
+            izpisiBarvnoSliko(picture);
+        }
+
+        if (Objects.equals(args[0], "sivinska")) {
+            String pictureName = args[1];
+            int[][][] picture = preberiBarvnoSliko(pictureName);
+            int[][] grayPicture = pretvoriVSivinsko(picture);
+            izpisiSliko(grayPicture);
+        }
+
+        if (Objects.equals(args[0], "uredi")) {
+            int numOfPics = args.length - 1;
+            String[] pictureNames = new String[numOfPics];
+
+            for (int i = 1; i < numOfPics + 1; i++) {
+                pictureNames[i - 1] = args[i];
+            }
+            preberiVseInIzpisi(pictureNames);
+        }
+
+
     }
 }
