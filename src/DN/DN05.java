@@ -1,3 +1,5 @@
+package DN;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.NoSuchElementException;
@@ -260,7 +262,7 @@ public class DN05 {
         int pictureHeight = picture[0].length;
         int pictureWidth = picture[0][0].length;
 
-        System.out.printf("Velikost slike: %d x %d\n", pictureWidth, pictureHeight);
+        System.out.printf("velikost slike: %d x %d\n", pictureWidth, pictureHeight);
 
         for (int y = 0; y < pictureHeight; y++) {
             for (int x = 0; x < pictureWidth; x++) {
@@ -296,7 +298,7 @@ public class DN05 {
         int currentlyStored = 0;
 
         for (String picName : pictureNames) {
-            System.out.println(picName);
+//            System.out.println(picName);
             int[][] picture = preberiSliko(picName);
             int pictureBrightness = (int) Math.round(svetlostSlike(picture));
 
@@ -314,20 +316,19 @@ public class DN05 {
                 String currentPicName = picsBrightnessSorted[i][0];
                 int currentPicBright = Integer.parseInt(picsBrightnessSorted[i][1]);
 
-
 //                Sorted by brightness
                 if (currentPicBright < pictureBrightness) {
                     place = i;
                     break;
                 } else if (currentPicBright == pictureBrightness) {
 //                    Ordered by name
-                    if (currentPicName.compareTo(picName) > 0) {
+                    if (currentPicName.toLowerCase().compareTo(picName.toLowerCase()) > 0) {
                         place = i;
                         break;
                     }
                 }
             }
-            System.out.println(place);
+
             if (currentlyStored != 0) {
                 for (int i = currentlyStored; i > place; i--) {
                     picsBrightnessSorted[i][0] = picsBrightnessSorted[i - 1][0];
@@ -344,6 +345,92 @@ public class DN05 {
         for (String[] picStats : picsBrightnessSorted) {
             System.out.printf("%s (%d)\n", picStats[0], Integer.parseInt(picStats[1]));
         }
+    }
+
+    static int[][] konvolucijaJedroCustom(int[][] picture, double[][] core) {
+        int pictureHeight = picture.length;
+        int pictureWidth = picture[0].length;
+
+        int[][] konovolucijaSlike = new int[pictureHeight - 2][pictureWidth - 2];
+
+        int prevColumVal, currentColumVal, nextColumVal, newPixelVal;
+
+        for (int y = 1; y < pictureHeight - 1; y++) {
+            for (int x = 1; x < pictureWidth - 1; x++) {
+                prevColumVal = (int) (Math.round(picture[y - 1][x - 1] * core[0][0]) + Math.round(picture[y][x - 1] * core[1][0]) + Math.round(picture[y + 1][x - 1] * core[2][0]))
+                ;
+                currentColumVal = (int) (Math.round(picture[y - 1][x] * core[0][1]) + Math.round(picture[y][x] * core[1][1]) + Math.round(picture[y + 1][x] * core[2][1]))
+                ;
+                nextColumVal = (int) (Math.round(picture[y - 1][x + 1] * core[0][2]) + Math.round(picture[y][x + 1] * core[1][2]) + Math.round(picture[y + 1][x + 1] * core[2][2]))
+                ;
+
+                newPixelVal = prevColumVal + currentColumVal + nextColumVal;
+
+                konovolucijaSlike[y - 1][x - 1] = newPixelVal;
+            }
+        }
+
+        return konovolucijaSlike;
+    }
+
+    static int[][] konvolucijaJedro(int[][] picture) {
+        double[][] core = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+
+        return konvolucijaJedroCustom(picture, core);
+    }
+
+    static int[][] imageEnlarge(int[][] picture) {
+        int pictureHeight = picture.length;
+        int pictureWidth = picture[0].length;
+
+        int[][] enlargePicture = new int[(pictureHeight + 2)][(pictureWidth + 2)];
+
+
+//        Adding extra border
+//        Top
+        for (int x = 0; x < pictureWidth; x++) {
+            enlargePicture[0][x + 1] = picture[0][x];
+        }
+
+//        Right
+        for (int y = 0; y < pictureHeight; y++) {
+            enlargePicture[y + 1][pictureWidth + 1] = picture[y][pictureWidth - 1];
+        }
+
+//        Bottom
+        for (int x = 0; x < pictureWidth; x++) {
+            enlargePicture[pictureHeight + 1][x + 1] = picture[pictureHeight - 1][x];
+        }
+
+//      Left
+        for (int y = 0; y < pictureHeight; y++) {
+            enlargePicture[y + 1][0] = picture[y][0];
+        }
+
+//        Corners
+        enlargePicture[0][0] = picture[0][0];
+        enlargePicture[0][pictureWidth + 1] = picture[0][pictureWidth - 1];
+        enlargePicture[pictureHeight + 1][pictureWidth + 1] = picture[pictureHeight - 1][pictureWidth - 1];
+        enlargePicture[pictureHeight + 1][0] = picture[pictureHeight - 1][0];
+
+//        Core
+        for (int y = 0; y < pictureHeight; y++) {
+            for (int x = 0; x < pictureWidth; x++) {
+                enlargePicture[y + 1][x + 1] = picture[y][x];
+            }
+        }
+
+        return enlargePicture;
+    }
+
+    static int[][] konvolucijaGlajenje(int[][] picture) {
+        double[][] core = {{(1.0 / 16), (1.0 / 8), (1.0 / 16)}, {(1.0 / 8), (1.0 / 4), (1.0 / 8)}, {(1.0 / 16), (1.0 / 8), (1.0 / 16)}};
+//      double[][] core = {{0.16, 0.8, 0.16}, {0.8, 0.4, 0.8}, {0.16, 0.8, 0.16}};
+//      double[][] core = {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}};
+
+        int[][] enlargePicture = imageEnlarge(picture);
+
+        return konvolucijaJedroCustom(enlargePicture, core);
     }
 
     public static void main(String[] args) {
@@ -415,6 +502,20 @@ public class DN05 {
                 pictureNames[i - 1] = args[i];
             }
             preberiVseInIzpisi(pictureNames);
+        }
+
+        if (Objects.equals(args[0], "jedro")) {
+            String pictureName = args[1];
+            int[][] picture = preberiSliko(pictureName);
+            int[][] konovolucijaPicture = konvolucijaJedro(picture);
+            izpisiSliko(konovolucijaPicture);
+        }
+
+        if (Objects.equals(args[0], "glajenje")) {
+            String pictureName = args[1];
+            int[][] picture = preberiSliko(pictureName);
+            int[][] konovolucijaPicture = konvolucijaGlajenje(picture);
+            izpisiSliko(konovolucijaPicture);
         }
 
 
