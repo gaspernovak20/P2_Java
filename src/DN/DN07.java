@@ -6,12 +6,16 @@ import java.util.Scanner;
 
 class Planet {
 
-    public String name;
-    public int r;
+    private String name;
+    private int r;
 
     public Planet(String name, int radius) {
         this.name = name;
         this.r = radius;
+    }
+
+    public String getName() {
+        return this.name;
     }
 
     public double povrsina() {
@@ -22,20 +26,29 @@ class Planet {
 
 public class DN07 {
 
+    static Planet[] readPlanets(String planetDoc) {
+        try {
+            Scanner planetsDoc = new Scanner(new File(planetDoc), "UTF-8");
+
+            Planet[] planets = new Planet[8];
+
+            int numOfPlanets = 0;
+            while (planetsDoc.hasNextLine()) {
+                String[] planetInfo = planetsDoc.nextLine().split(":");
+
+                planets[numOfPlanets++] = new Planet(planetInfo[0], Integer.parseInt(planetInfo[1]));
+            }
+            planetsDoc.close();
+
+            return planets;
+        } catch (Exception e) {
+            return new Planet[0];
+        }
+    }
+
     public static void main(String[] args) throws FileNotFoundException {
 
-        Scanner planetsDoc = new Scanner(new File(args[0]));
-
-        Planet[] planets = new Planet[8];
-        String[] planetInfo = new String[2];
-
-        int numOfPlanets = 0;
-        while (planetsDoc.hasNextLine()) {
-            planetInfo = planetsDoc.nextLine().split(":");
-
-            planets[numOfPlanets] = new Planet(planetInfo[0], Integer.parseInt(planetInfo[1]));
-            numOfPlanets++;
-        }
+        Planet[] planets = readPlanets(args[0]);
 
         String[] planetsKnown = args[1].split("\\+");
         double planetsSurface = 0;
@@ -43,10 +56,10 @@ public class DN07 {
         for (int j = 0; j < planetsKnown.length; j++) {
             String currentPlanetName = planetsKnown[j].toLowerCase();
 
-            for (int i = 0; i < numOfPlanets; i++) {
+            for (int i = 0; i < planets.length; i++) {
                 Planet planet = planets[i];
 
-                if (planet.name.toLowerCase().equals(currentPlanetName)) {
+                if (planet.getName().equalsIgnoreCase(currentPlanetName)) {
                     planetsSurface += planet.povrsina();
                 }
             }
@@ -54,6 +67,5 @@ public class DN07 {
 
         System.out.printf("Povrsina planetov \"%s\" je %3.0f milijonov km2", args[1], planetsSurface / 1000000);
 
-        planetsDoc.close();
     }
 }
